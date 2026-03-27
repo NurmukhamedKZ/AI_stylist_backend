@@ -1,6 +1,23 @@
-def main():
-    print("Hello from backend!")
+import asyncio
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+
+from app.config import CROPS_DIR
+from app.db.session import create_tables
+from app.db.qdrant import init_collection
+from app.routes.items import router as items_router
+from app.routes.ingest import router as ingest_router
 
 
-if __name__ == "__main__":
-    main()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    create_tables()
+    await asyncio.to_thread(init_collection)
+    yield
+
+
+app = FastAPI(title="AI Fashion Stylist", lifespan=lifespan)
+app.include_router(items_router)
+app.include_router(ingest_router)
+app.mount("/crops", StaticFiles(directory=CROPS_DIR), name="crops")
