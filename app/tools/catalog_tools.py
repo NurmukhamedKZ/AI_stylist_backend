@@ -17,11 +17,13 @@ def search_fashion_items(query: str, num_images: int = 10) -> dict:
 
     Returns dict with:
       - urls: list of Pinterest image URLs (empty on error or no results)
-      - status: "success" | "timeout" | "no_results"
+      - status: "success" | "error" | "no_results"
       - query: the original query (use when retrying with modified terms)
-      - error_message: present only when status is "timeout"
+      - errorCategory: "transient" (present when status is "error")
+      - isRetryable: True (present when status is "error")
+      - error_message: present when status is "error"
 
-    If status is "timeout": retry with a simpler, shorter query.
+    If status is "error" (errorCategory "transient"): retry with a simpler, shorter query.
     If status is "no_results": retry with broader search terms.
     Do NOT use for: evaluating outfits, generating images, or building cards.
     """
@@ -37,7 +39,9 @@ def search_fashion_items(query: str, num_images: int = 10) -> dict:
     except Exception as e:
         return {
             "urls": [],
-            "status": "timeout",
+            "status": "error",
+            "errorCategory": "transient",
+            "isRetryable": True,
             "query": query,
-            "error_message": f"Search failed: {e}. Retry with a simpler query.",
+            "error_message": f"Pinterest search failed: {e}. Retry with a shorter query.",
         }
