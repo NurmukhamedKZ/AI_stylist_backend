@@ -8,6 +8,7 @@ from langchain_openai import ChatOpenAI
 
 from app.tools.catalog_tools import search_fashion_items
 from app.tools.stylist_tools import evaluate_outfit, generate_outfit_image
+from app.models.tools import ImageURLs
 
 load_dotenv()
 
@@ -46,7 +47,7 @@ tools = [search_fashion_items, evaluate_outfit, generate_outfit_image]
 
 llm = ChatOpenAI(model="gpt-5.4-mini")
 
-agent = create_agent(model=llm, tools=tools, system_prompt=SYSTEM_PROMPT)
+agent = create_agent(model=llm, tools=tools, system_prompt=SYSTEM_PROMPT, context_schema=ImageURLs)
 
 
 async def run_agent_stream(prompt: str) -> AsyncGenerator[tuple[str, object], None]:

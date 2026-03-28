@@ -4,6 +4,8 @@ from pathlib import Path
 from langchain.tools import tool
 from langchain_openai import ChatOpenAI
 from google import genai
+from langchain.tools import tool, ToolRuntime
+from PIL import Image
 
 from app.config import GEMINI_API_KEY
 
@@ -29,7 +31,7 @@ def _get_gemini() -> genai.Client:
 
 
 @tool
-def evaluate_outfit(prompt: str,image_urls: list[str]) -> str:
+def evaluate_outfit(prompt: str, image_urls: list[str]) -> str:
     """
     Evaluates visual compatibility of clothing items as a complete outfit.
 
@@ -82,7 +84,7 @@ def evaluate_outfit(prompt: str,image_urls: list[str]) -> str:
 
 
 @tool
-def generate_outfit_image(outfit_description: str, urls: list[str]) -> dict:
+def generate_outfit_image(outfit_description: str, image_urls: list[str]) -> dict:
     """
     Generates a fashion outfit image using Gemini image generation.
 
@@ -92,6 +94,7 @@ def generate_outfit_image(outfit_description: str, urls: list[str]) -> dict:
       - outfit_description: detailed text description of the outfit
         (style, colors, specific pieces, e.g. "casual dark outfit: navy crew-neck
         sweater, black slim jeans, white minimal sneakers")
+      - image_urls: images urls that can be used as references
 
     Returns dict with:
       - status: "success" | "error"
@@ -116,9 +119,11 @@ def generate_outfit_image(outfit_description: str, urls: list[str]) -> dict:
                 "Studio lighting, clean white background, professional fashion photography style."
             )
 
+            imgs = [Image.open(url) for url in image_urls]
+
             response = client.models.generate_content(
                 model="gemini-3.1-flash-image-preview",
-                contents=[prompt],
+                contents=[prompt] + imgs,
             )
 
             image_path: str | None = None

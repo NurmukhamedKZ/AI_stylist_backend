@@ -5,6 +5,7 @@ from langchain.messages import HumanMessage
 
 from app.db.session import get_db
 from app.models.clothing import ClothingItem
+from app.models.clothing import User
 from app.services.recommendation import get_recommendations, item_dict
 from app.services.pinterest_search import PinterestSearcher
 
@@ -31,6 +32,18 @@ def get_item_2(img_url: str):
     searcher = PinterestSearcher()
     return searcher.search(output.content, num_images=10)
 
+@router.get("/try_on")
+def try_on(img_url: str, user_image: str = None, db: Session = Depends(get_db)):
+    if not user_image:
+        user_image = db.get(User)
+
+    
+
+    
+
+    
+
+    
 
 @router.get("/{item_id}")
 def get_item(item_id: str, db: Session = Depends(get_db)):

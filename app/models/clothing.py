@@ -63,3 +63,10 @@ class ClothingItem(Base):
     crop_path = Column(String, nullable=True)
 
     image = relationship("Image", back_populates="items")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    image = Column(String, nullable=True)
