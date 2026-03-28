@@ -24,7 +24,7 @@ def _get_openai() -> ChatOpenAI:
 def _get_gemini() -> genai.Client:
     global _gemini_client
     if _gemini_client is None:
-        _gemini_client = genai.Client(model="gemini-3.1-flash-preview", api_key=GEMINI_API_KEY)
+        _gemini_client = genai.Client(api_key=GEMINI_API_KEY)
     return _gemini_client
 
 
@@ -51,6 +51,7 @@ def evaluate_outfit(prompt: str,image_urls: list[str]) -> str:
     Do NOT use for: searching items, generating images, or building cards.
     Call this BEFORE generate_outfit_image.
     """
+    print("Evaluate_outfit tool:")
     print(len(image_urls))
     if len(image_urls) < 2:
         raise ValueError(
@@ -75,12 +76,13 @@ def evaluate_outfit(prompt: str,image_urls: list[str]) -> str:
         content.append({"type": "image_url", "image_url": {"url": url}})
 
     response = llm.invoke([{"role": "user", "content": content}])
-    print(response)
+    print("Evaluate_outfit Result: ")
+    print(response.content)
     return response.content
 
 
 @tool
-def generate_outfit_image(outfit_description: str) -> dict:
+def generate_outfit_image(outfit_description: str, urls: list[str]) -> dict:
     """
     Generates a fashion outfit image using Gemini image generation.
 
@@ -101,6 +103,7 @@ def generate_outfit_image(outfit_description: str) -> dict:
 
     Do NOT use for: searching items or evaluating outfits.
     """
+    print("Generate_outfit_image tool")
     max_attempts = 2
     last_error: Exception | None = None
 

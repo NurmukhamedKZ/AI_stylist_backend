@@ -1,6 +1,6 @@
 from langchain.tools import tool
 
-from scripts.pinterest_search import PinterestSearcher
+from app.services.pinterest_search import PinterestSearcher
 
 
 @tool
@@ -28,7 +28,6 @@ def search_fashion_items(query: str, num_images: int = 3) -> dict:
     Do NOT use for: evaluating outfits, generating images, or building cards.
     """
     try:
-        print(num_images)
         searcher = PinterestSearcher(headless=True)
         urls = searcher.search(query, num_images)
 

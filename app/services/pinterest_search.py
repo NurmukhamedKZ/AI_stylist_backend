@@ -64,8 +64,6 @@ class PinterestSearcher:
                             if len(image_urls) >= num_images:
                                 break
 
-                    print(f"Found {len(image_urls)} images...")
-
                     if len(image_urls) >= num_images:
                         break
 
@@ -81,7 +79,7 @@ class PinterestSearcher:
                 browser.close()
 
         image_urls = image_urls[:num_images]
-        print(f"\nFound {len(image_urls)} unique images for query: '{query}'")
+        print(f"Found {len(image_urls)} unique images for query: '{query}'")
         return image_urls
 
 

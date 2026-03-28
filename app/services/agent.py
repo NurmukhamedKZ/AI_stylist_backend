@@ -15,37 +15,14 @@ SYSTEM_PROMPT = """You are a professional AI fashion stylist. Your job is to fin
 
 Always follow this exact order:
 1. Call search_fashion_items for ALL categories simultaneously in a single turn — do not wait for one search to complete before starting another.
-2. Call evaluate_outfit with all collected URLs. Color compatibility is a priority — the assessment must explicitly state which colors work or clash.
-3. Call generate_outfit_image with a detailed outfit description.
+2. Call evaluate_outfit with collected URLs. (you can call it parallelly for different outfits) Color compatibility is a priority — the assessment must explicitly state which colors work or clash.
+3. Call generate_outfit_image with a detailed outfit description and image urls as references
 4. Return the final outfit card in your response: include item URLs, the generated image path, and a styling description.
 
 When the user specifies a scenario, adjust the search queries accordingly:
 - work/office: prioritize structured pieces, muted palette (navy, grey, beige, white)
 - leisure/casual: comfort-first, relaxed fits, versatile colors
 - event/evening: elevated fabrics, statement pieces, rich or monochrome palette
-
-Examples of how to decompose a style request into parallel search queries:
-
-<example>
-User: "smart casual office look"
-→ search_fashion_items("smart casual dress shirt men office", 5)  [simultaneously]
-→ search_fashion_items("smart casual chinos men beige", 5)         [simultaneously]
-→ search_fashion_items("smart casual leather loafers men", 5)      [simultaneously]
-</example>
-
-<example>
-User: "evening event outfit for women"
-→ search_fashion_items("elegant midi dress women evening black", 5)  [simultaneously]
-→ search_fashion_items("strappy heels women black minimal", 5)        [simultaneously]
-→ search_fashion_items("clutch bag women evening gold", 5)            [simultaneously]
-</example>
-
-<example>
-User: "summer beach outfit for women"
-→ search_fashion_items("summer linen crop top women white", 5)          [simultaneously]
-→ search_fashion_items("summer wide leg linen trousers women beige", 5)  [simultaneously]
-→ search_fashion_items("summer sandals women minimal", 5)                [simultaneously]
-</example>
 
 If search_fashion_items returns errorCategory "transient": retry once with a shorter query.
 If search_fashion_items returns status "no_results": retry with broader terms.
@@ -54,7 +31,7 @@ generate_outfit_image already retries internally — if it returns isRetryable=f
 
 tools = [search_fashion_items, evaluate_outfit, generate_outfit_image]
 
-llm = ChatOpenAI(model="gpt-4o")
+llm = ChatOpenAI(model="gpt-5.4-mini")
 
 agent = create_agent(model=llm, tools=tools, system_prompt=SYSTEM_PROMPT)
 
@@ -97,6 +74,8 @@ async def run_agent_stream(prompt: str) -> AsyncGenerator[tuple[str, object], No
                             if isinstance(ai_msg.content, str)
                             else str(ai_msg.content)
                         )
+                        print("Main agent final output:")
+                        print(final_text)
 
                 elif source == "tools":
                     for msg in update.get("messages", []):
