@@ -8,19 +8,20 @@ class PinterestSearcher:
 
     def __init__(self, headless: bool = True):
         self.headless = headless
+        self.seen_urls = set()
 
-    def search(self, query: str, num_images: int = 20) -> list[str]:
+    def search(self, query: str, num_images: int = 20) -> list[dict]:
         """
-        Search Pinterest and return image URLs.
+        Search Pinterest and return image URLs with descriptions.
 
         Args:
             query: Search term
             num_images: Number of image URLs to return
 
         Returns:
-            List of image URLs
+            List of dicts with 'url' and 'description' keys
         """
-        image_urls = []
+        results = []
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=self.headless)
@@ -47,7 +48,7 @@ class PinterestSearcher:
                 scroll_count = 0
                 max_scrolls = max((num_images // 20) + 3, 5)
 
-                while len(image_urls) < num_images and scroll_count < max_scrolls:
+                while len(results) < num_images and scroll_count < max_scrolls:
                     images = page.query_selector_all("img[src*='pinimg.com']")
 
                     for img in images:
@@ -58,13 +59,15 @@ class PinterestSearcher:
 
                             high_res = re.sub(r'/\d+x\d*/', '/736x/', src)
 
-                            if high_res not in image_urls:
-                                image_urls.append(high_res)
+                            if high_res not in self.seen_urls:
+                                self.seen_urls.add(high_res)
+                                description = img.get_attribute("alt") or ""
+                                results.append({"url": high_res, "description": description})
 
-                            if len(image_urls) >= num_images:
+                            if len(results) >= num_images:
                                 break
 
-                    if len(image_urls) >= num_images:
+                    if len(results) >= num_images:
                         break
 
                     page.evaluate("window.scrollBy(0, 1000)")
@@ -78,9 +81,9 @@ class PinterestSearcher:
             finally:
                 browser.close()
 
-        image_urls = image_urls[:num_images]
-        print(f"Found {len(image_urls)} unique images for query: '{query}'")
-        return image_urls
+        results = results[:num_images]
+        print(f"Found {len(results)} unique images for query: '{query}'")
+        return results
 
 
 def main():
@@ -96,9 +99,9 @@ def main():
     searcher = PinterestSearcher(headless=not args.show_browser)
     urls = searcher.search(args.query, args.num)
 
-    print("\nImage URLs:")
-    for url in urls:
-        print(url)
+    print("\nResults:")
+    for item in urls:
+        print(f"{item['url']}\n  {item['description']}")
 
 
 if __name__ == "__main__":
