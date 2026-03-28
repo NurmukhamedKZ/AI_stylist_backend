@@ -1,10 +1,12 @@
+import json
+
 from langchain.tools import tool
 
 from app.services.pinterest_search import PinterestSearcher
 
 
 @tool
-def search_fashion_items(query: str, num_images: int = 3) -> dict:
+def search_fashion_items(query: str, num_images: int = 3) -> list | str:
     """
     Searches Pinterest for fashion items matching the query.
 
@@ -15,13 +17,13 @@ def search_fashion_items(query: str, num_images: int = 3) -> dict:
       - query: descriptive search term (e.g. "dark navy slim fit jeans men")
       - num_images: number of results to return (default 3, max 10)
 
-    Returns dict with:
-      - urls: list of Pinterest image URLs (empty on error or no results)
-      - status: "success" | "error" | "no_results"
-      - query: the original query (use when retrying with modified terms)
-      - errorCategory: "transient" (present when status is "error")
-      - isRetryable: True (present when status is "error")
-      - error_message: present when status is "error"
+    Returns a list of content blocks on success:
+      - First block: {"type": "text", "text": JSON string with status/query/urls}
+      - Remaining blocks: {"type": "image_url", "image_url": {"url": "..."}} — one per image
+    Returns a JSON string on error or no_results.
+
+    Inspect the images visually to evaluate each item's style and quality.
+    Use the urls from the text block when passing items to evaluate_outfit or generate_outfit_image.
 
     If status is "error" (errorCategory "transient"): retry with a simpler, shorter query.
     If status is "no_results": retry with broader search terms.
@@ -32,16 +34,25 @@ def search_fashion_items(query: str, num_images: int = 3) -> dict:
         urls = searcher.search(query, num_images)
 
         if not urls:
-            return {"urls": [], "status": "no_results", "query": query}
+            return json.dumps({"urls": [], "status": "no_results", "query": query})
 
-        return {"urls": urls, "status": "success", "query": query}
+        content_blocks: list[dict] = [
+            {
+                "type": "text",
+                "text": json.dumps({"status": "success", "query": query, "urls": urls}),
+            }
+        ]
+        for url in urls:
+            content_blocks.append({"type": "image_url", "image_url": {"url": url}})
+
+        return content_blocks
 
     except Exception as e:
-        return {
+        return json.dumps({
             "urls": [],
             "status": "error",
             "errorCategory": "transient",
             "isRetryable": True,
             "query": query,
             "error_message": f"Pinterest search failed: {e}. Retry with a shorter query.",
-        }
+        })
