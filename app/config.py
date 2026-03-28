@@ -9,3 +9,4 @@ QDRANT_API_KEY: str = os.environ["QDRANT_API_KEY"]  # Qdrant Cloud API key
 QDRANT_COLLECTION: str = "clothing_items"
 DATA_DIR: str = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "data"))
 CROPS_DIR: str = os.path.join(DATA_DIR, "crops")
+OUTFITS_DIR: str = os.path.join(DATA_DIR, "outfits")

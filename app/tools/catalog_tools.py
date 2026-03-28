@@ -4,7 +4,7 @@ from scripts.pinterest_search import PinterestSearcher
 
 
 @tool
-def search_fashion_items(query: str, num_images: int = 10) -> dict:
+def search_fashion_items(query: str, num_images: int = 3) -> dict:
     """
     Searches Pinterest for fashion items matching the query.
 
@@ -13,7 +13,7 @@ def search_fashion_items(query: str, num_images: int = 10) -> dict:
 
     Input:
       - query: descriptive search term (e.g. "dark navy slim fit jeans men")
-      - num_images: number of results to return (default 10, max 20)
+      - num_images: number of results to return (default 3, max 10)
 
     Returns dict with:
       - urls: list of Pinterest image URLs (empty on error or no results)
@@ -28,6 +28,7 @@ def search_fashion_items(query: str, num_images: int = 10) -> dict:
     Do NOT use for: evaluating outfits, generating images, or building cards.
     """
     try:
+        print(num_images)
         searcher = PinterestSearcher(headless=True)
         urls = searcher.search(query, num_images)
 

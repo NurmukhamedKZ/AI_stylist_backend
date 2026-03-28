@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+Always use context7 before writing any code in Langchain/Langgraph
+
 ## Commands
 
 This project uses `uv` for dependency management (Python 3.13).

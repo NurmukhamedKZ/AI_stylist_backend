@@ -24,12 +24,12 @@ def _get_openai() -> ChatOpenAI:
 def _get_gemini() -> genai.Client:
     global _gemini_client
     if _gemini_client is None:
-        _gemini_client = genai.Client(api_key=GEMINI_API_KEY)
+        _gemini_client = genai.Client(model="gemini-3.1-flash-preview", api_key=GEMINI_API_KEY)
     return _gemini_client
 
 
 @tool
-def evaluate_outfit(image_urls: list[str]) -> str:
+def evaluate_outfit(prompt: str,image_urls: list[str]) -> str:
     """
     Evaluates visual compatibility of clothing items as a complete outfit.
 
@@ -38,6 +38,7 @@ def evaluate_outfit(image_urls: list[str]) -> str:
     Do NOT call with fewer than 2 URLs.
 
     Input:
+      - prompt: the style that user want
       - image_urls: list of Pinterest image URLs (2–6 items)
 
     Output: text-only compatibility assessment — color harmony (complementary,
@@ -50,6 +51,7 @@ def evaluate_outfit(image_urls: list[str]) -> str:
     Do NOT use for: searching items, generating images, or building cards.
     Call this BEFORE generate_outfit_image.
     """
+    print(len(image_urls))
     if len(image_urls) < 2:
         raise ValueError(
             f"evaluate_outfit requires at least 2 image URLs, got {len(image_urls)}. "
@@ -65,6 +67,7 @@ def evaluate_outfit(image_urls: list[str]) -> str:
                 "You are a professional fashion stylist. Evaluate whether these clothing items "
                 "work together as a complete outfit. Assess: color harmony, style consistency, "
                 "and overall aesthetic. Be specific about what works and what doesn't."
+                f"User's preferences: {prompt}"
             ),
         }
     ]
@@ -72,6 +75,7 @@ def evaluate_outfit(image_urls: list[str]) -> str:
         content.append({"type": "image_url", "image_url": {"url": url}})
 
     response = llm.invoke([{"role": "user", "content": content}])
+    print(response)
     return response.content
 
 
