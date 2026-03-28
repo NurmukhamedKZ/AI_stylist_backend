@@ -25,3 +25,6 @@ dependencies = [
     "uvicorn>=0.42.0",
     "voyageai>=0.3.7",
 ]
+
+[tool.uv]
+dev-dependencies = ["pytest>=8.0.0"]
